@@ -4,4 +4,5 @@ import com.example.ProjectShoes.entity.Role;
 
 public interface RoleService {
     Role createRole(Role request);
+    Role findById(Long id);
 }

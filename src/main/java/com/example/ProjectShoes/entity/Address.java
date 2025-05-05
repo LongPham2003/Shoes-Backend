@@ -14,11 +14,6 @@ import java.io.Serializable;
 @Entity
 @Table(name = "address")
 public class Address extends PrimaryEntity implements Serializable {
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
 
     @Column(name = "province")
     private String province;

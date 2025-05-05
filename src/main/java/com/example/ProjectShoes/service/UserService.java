@@ -1,8 +1,12 @@
 package com.example.ProjectShoes.service;
 
-import com.example.ProjectShoes.dto.request.UserCreatedRequest;
-import com.example.ProjectShoes.entity.User;
+import com.example.ProjectShoes.dto.request.UpdateUserRequest;
+import com.example.ProjectShoes.dto.request.UserRequest;
+import com.example.ProjectShoes.dto.response.UpdateUserResponse;
+import com.example.ProjectShoes.dto.response.UserResponse;
 
 public interface UserService {
-    User createUser(UserCreatedRequest request);
+    UserResponse createUser(UserRequest request);
+    UpdateUserResponse updateUser(Long id ,UpdateUserRequest request);
+    UserResponse findById(Long id);
 }

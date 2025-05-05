@@ -5,10 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AddressCreatedRequest {
-    private String name;
+public class AddressRequest {
 
-    private String phoneNumber;
 
     private String province;
 

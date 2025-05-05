@@ -1,6 +1,8 @@
 package com.example.ProjectShoes.service.impl;
 
 import com.example.ProjectShoes.entity.Role;
+import com.example.ProjectShoes.exception.AppException;
+import com.example.ProjectShoes.exception.ErrorCode;
 import com.example.ProjectShoes.repository.RoleRepository;
 import com.example.ProjectShoes.service.RoleService;
 import lombok.RequiredArgsConstructor;
@@ -22,4 +24,10 @@ public class RoleImpl implements RoleService {
 
         return roleRepository.save(role);
     }
+
+    @Override
+    public Role findById(Long id) {
+        return roleRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
 }

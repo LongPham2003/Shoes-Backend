@@ -1,7 +1,10 @@
 package com.example.ProjectShoes.entity;
 
-import com.example.ProjectShoes.common.UserRole;
+import com.example.ProjectShoes.common.Gender;
+import com.example.ProjectShoes.common.UserStatus;
 import com.example.ProjectShoes.entity.base.PrimaryEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,21 +40,23 @@ public class User extends PrimaryEntity implements Serializable {
     private String phoneNumber;
 
     @Column(name = "gender")
-    private String gender;
+    @Enumerated(EnumType.STRING )
+    private Gender gender;
 
     @Column(name = "avatar")
     private String avatar;
 
-    @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "createAt", "updateAt", "createBy", "updateBy"})
+    @JsonIgnore
     private List<Address> address;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
+    @JsonIgnoreProperties(value = { "createAt", "updateAt", "createBy", "updateBy"})
     private Role role;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole userRole;
-
     @Column(name = "status")
-    private Boolean status;
+    @Enumerated(EnumType.STRING )
+    private UserStatus status;
 }

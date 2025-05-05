@@ -5,10 +5,7 @@ import com.example.ProjectShoes.service.RoleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +18,13 @@ public class RoleController {
 
     @PostMapping("/create")
     public Role createRole(@RequestBody Role role) {
+        log.info("create role successfully");
         return roleService.createRole(role);
+    }
+
+    @GetMapping("/{id}")
+    public Role getRoleByid(@PathVariable Long id){
+        log.info("get role successfully");
+        return roleService.findById(id);
     }
 }
