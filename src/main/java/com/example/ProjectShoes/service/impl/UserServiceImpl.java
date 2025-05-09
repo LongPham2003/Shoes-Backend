@@ -5,6 +5,7 @@ import com.example.ProjectShoes.dto.request.AddressRequest;
 import com.example.ProjectShoes.dto.request.UpdateUserRequest;
 import com.example.ProjectShoes.dto.request.UserRequest;
 import com.example.ProjectShoes.dto.response.AddressResponse;
+import com.example.ProjectShoes.dto.response.PageResponse;
 import com.example.ProjectShoes.dto.response.UpdateUserResponse;
 import com.example.ProjectShoes.dto.response.UserResponse;
 import com.example.ProjectShoes.entity.Address;
@@ -19,8 +20,18 @@ import com.example.ProjectShoes.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +46,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackOn = Exception.class)
     public UserResponse createUser(UserRequest request) {
+        if(userRepository.existsByEmail(request.getEmail())){
+            throw  new AppException(ErrorCode.EMAIL_EXISTED);
+        }
+        if(userRepository.existsByUserName(request.getUserName())){
+            throw  new AppException(ErrorCode.USER_EXISTED);
+        }
+        if(userRepository.existsByPhoneNumber(request.getPhoneNumber())){
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
         User user = new User();
         user.setUserName(request.getUserName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -45,7 +65,7 @@ public class UserServiceImpl implements UserService {
         user.setGender(request.getGender());
         user.setAvatar(request.getAvatar());
         user.setStatus(UserStatus.ACTIVE);
-
+        
         Role role = roleRepository.findById(request.getRoleId()).orElseThrow(() -> new RuntimeException("Role not found"));
         log.info("Role: {}", role);
         user.setRole(role);
@@ -91,6 +111,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UpdateUserResponse updateUser(Long id, UpdateUserRequest request) {
         User result = userRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if(userRepository.existsByEmail(request.getEmail())){
+            throw  new AppException(ErrorCode.EMAIL_EXISTED);
+        }
+        if(userRepository.existsByPhoneNumber(request.getPhoneNumber())){
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
         result.setName(request.getName());
         result.setBirthday(request.getBirthday());
         result.setEmail(request.getEmail());
@@ -133,6 +159,51 @@ public class UserServiceImpl implements UserService {
                 .gender(user.getGender())
                 .address(addressResponse)
                 .build();
+    }
+
+    @Override
+    public PageResponse<UserResponse> finAll(String keyword,String sort, int pageNumber, int pageSize) {
+        // Sorting
+        Sort.Order order = new Sort.Order(Sort.Direction.ASC,"id");
+        if (StringUtils.hasLength(sort)) {
+            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)"); // tencot:asc|desc
+            Matcher matcher = pattern.matcher(sort);
+            if (matcher.find()) {
+                String columnName = matcher.group(1);
+                if (matcher.group(3).equalsIgnoreCase("asc")) {
+                    order = new Sort.Order(Sort.Direction.ASC, columnName);
+                } else {
+                    order = new Sort.Order(Sort.Direction.DESC, columnName);
+                }
+            }
+        }
+        Pageable pageable = PageRequest.of(pageNumber -1 ,pageSize,Sort.by(order));
+        Page<User> userPage = userRepository.searchByKeyword(  keyword,pageable);
+
+        List<User> userList= userPage.getContent();
+        List<UserResponse> userResponseList = new ArrayList<>();
+
+        for (User user : userList) {
+            UserResponse response = new UserResponse();
+            response.setId(user.getId());
+            response.setUserName(user.getUserName());
+            response.setName(user.getName());
+            response.setBirthday(user.getBirthday());
+            response.setEmail(user.getEmail());
+            response.setPhoneNumber(user.getPhoneNumber());
+            response.setGender(user.getGender());
+            userResponseList.add(response);
+        }
+
+        PageResponse<UserResponse> pageResponse = new PageResponse<>();
+        pageResponse.setPageNumber(userPage.getNumber());
+        pageResponse.setPageSize(userPage.getSize());
+        pageResponse.setTotalElements(userPage.getTotalElements());
+        pageResponse.setTotalPages(userPage.getTotalPages());
+        pageResponse.setData(userResponseList);
+
+        log.info("{} :",userPage.getContent());
+        return pageResponse;
     }
 
 }

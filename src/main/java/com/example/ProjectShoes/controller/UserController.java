@@ -4,9 +4,9 @@ package com.example.ProjectShoes.controller;
 import com.example.ProjectShoes.dto.request.UpdateUserRequest;
 import com.example.ProjectShoes.dto.response.ApiResponse;
 import com.example.ProjectShoes.dto.request.UserRequest;
+import com.example.ProjectShoes.dto.response.PageResponse;
 import com.example.ProjectShoes.dto.response.UpdateUserResponse;
 import com.example.ProjectShoes.dto.response.UserResponse;
-import com.example.ProjectShoes.entity.User;
 import com.example.ProjectShoes.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,6 +23,20 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<UserResponse>> UserSearch(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size
+    ){
+        return ApiResponse.<PageResponse<UserResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(userService.finAll(keyword,sort,page,size))
+                .build();
+    }
 
     @PostMapping("/create")
     public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserRequest request){
